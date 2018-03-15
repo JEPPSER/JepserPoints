@@ -70,17 +70,16 @@ public class Main {
 						// Calculating aim difficulty with spacing and angle.
 						double aimDifficulty = 0;
 						if (i > 1) {
-//							if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-//								aimDifficulty = Math.pow(spacing, 0.95) * (3 + (1 - (angle / 100) * streamValue));
-//							} else {
-								aimDifficulty = Math.pow(spacing, 0.9) * 3.5;
-//							}
+							if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
+								aimDifficulty = Math.pow(spacing, 1) * (3 + (180.0 - angle) / 100.0);
+							} else {
+								aimDifficulty = Math.pow(spacing, 1) * 3;
+							}
+							if(angle > 80 && angle < 100){
+								aimDifficulty *= 1.4;
+							}
 						}
 						aimDifficulty /= 100;
-
-						if (spacing < 50) {
-							aimDifficulty *= 0.9;
-						}
 
 						// Calculating irregularity difficulty.
 						double irrDifficulty = 1;
@@ -91,12 +90,12 @@ public class Main {
 								if (oldSpacing == 0) {
 									oldSpacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 1.5;
+								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.5;
 							} else {
 								if (spacing == 0) {
 									spacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 1.5;
+								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.5;
 							}
 						}
 
@@ -108,12 +107,12 @@ public class Main {
 								if (oldAngle == 0) {
 									oldAngle = 0.01;
 								}
-								irrDifficulty *= 1 + (1 - (angle / oldAngle)) * 0.4;
+								irrDifficulty *= 1 + (1 - (angle / oldAngle)) * 0.5;
 							} else {
 								if (angle == 0) {
 									angle = 0.01;
 								}
-								irrDifficulty *= 1 + (1 - (oldAngle / angle)) * 0.4;
+								irrDifficulty *= 1 + (1 - (oldAngle / angle)) * 0.5;
 							}
 						}
 
@@ -121,8 +120,7 @@ public class Main {
 
 						// Adding speed consideration
 						double speedDifficulty = 0;
-						speedDifficulty = 100 / Math.pow(deltaTime, 2.6);
-						speedDifficulty *= 100;
+						speedDifficulty = 100 / Math.pow(deltaTime, 2.2);
 						speedDifficulty += 0;
 
 						double noteDifficulty = speedDifficulty * aimDifficulty;
@@ -148,8 +146,8 @@ public class Main {
 
 				difficulty = getTotalPPValue(allNotes, numberOfObjects);
 				System.out.println(files[file].getName());
-				System.out.println("pp for fc: " + Math.round(difficulty));
-				System.out.println("Hardest note: " + hardestNote + "\n");
+				System.out.println("pp for fc: " + Math.round(difficulty) + "\n");
+				//System.out.println("Hardest note: " + hardestNote + "\n");
 				scan.close();
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -163,8 +161,8 @@ public class Main {
 		for (int i = 0; i < list.size(); i++) {
 			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.983, i);
 		}
-		difficulty *= 29;
-		difficulty *= 1.0 + (double) (num/9000.0);
+		difficulty *= 270;
+		difficulty *= 1.0 + (double) (num/10000.0);
 		return difficulty;
 	}
 
