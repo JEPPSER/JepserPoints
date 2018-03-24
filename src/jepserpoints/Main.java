@@ -83,43 +83,31 @@ public class Main {
 								aimDifficulty = Math.pow(spacing, 0.96) * 3;
 							}
 							if(angle > 80 && angle < 100){
-								aimDifficulty *= 1.3;
+								aimDifficulty *= 1.5;
 							}
 						}
 
 						// Calculating irregularity difficulty.
 						double irrDifficulty = 1;
 
+						// Spacing irregularity
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-							// Spacing irregularity
 							if (oldSpacing > spacing) {
 								if (oldSpacing == 0) {
 									oldSpacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.4;
+								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.3;
 							} else {
 								if (spacing == 0) {
 									spacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.4;
+								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.3;
 							}
 						}
 
-						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1
-								&& oldStreamValue - oldoldStreamValue > -0.1
-								&& oldStreamValue - oldoldStreamValue < 0.1) {
-							// Angle irregularity
-							if (oldAngle > angle) {
-								if (oldAngle == 0) {
-									oldAngle = 0.01;
-								}
-								irrDifficulty *= 1 + (1 - (angle / oldAngle)) * 0;
-							} else {
-								if (angle == 0) {
-									angle = 0.01;
-								}
-								irrDifficulty *= 1 + (1 - (oldAngle / angle)) * 0;
-							}
+						// Angle irregularity
+						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
+								irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.3;
 						}
 
 						aimDifficulty *= irrDifficulty;
@@ -165,7 +153,7 @@ public class Main {
 		for (int i = 0; i < list.size() && i < 70; i++) {
 			difficulty += list.get(list.size() - 1 - i) * Math.pow(1, i);
 		}
-		difficulty *= 830;
+		difficulty *= 800;
 		
 		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) num / 2000.0) +
 				(num > 2000 ? Math.log10((double) num / 2000.0) * 0.5 : 0.0);
