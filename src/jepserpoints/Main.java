@@ -78,9 +78,9 @@ public class Main {
 						double aimDifficulty = 0;
 						if (i > 1) {
 							if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-								aimDifficulty = Math.pow(spacing, 1) * (3 + (180.0 - angle) / 100.0);
+								aimDifficulty = Math.pow(spacing, 0.96) * (3 + (180.0 - angle) / 100.0);
 							} else {
-								aimDifficulty = Math.pow(spacing, 1) * 3;
+								aimDifficulty = Math.pow(spacing, 0.96) * 3;
 							}
 							if(angle > 80 && angle < 100){
 								aimDifficulty *= 1.3;
@@ -96,12 +96,12 @@ public class Main {
 								if (oldSpacing == 0) {
 									oldSpacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.3;
+								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.4;
 							} else {
 								if (spacing == 0) {
 									spacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.3;
+								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.4;
 							}
 						}
 
@@ -165,7 +165,7 @@ public class Main {
 		for (int i = 0; i < list.size() && i < 70; i++) {
 			difficulty += list.get(list.size() - 1 - i) * Math.pow(1, i);
 		}
-		difficulty *= 850;
+		difficulty *= 830;
 		
 		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) num / 2000.0) +
 				(num > 2000 ? Math.log10((double) num / 2000.0) * 0.5 : 0.0);
