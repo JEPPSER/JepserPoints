@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Scanner;
 
 public class Main {
+	
+	private static double od = 0;
 
 	public static void main(String[] args) {
 		File[] files = new File("res").listFiles();
@@ -19,13 +21,14 @@ public class Main {
 				while (!str.contains("[HitObjects]")) {
 					if(str.startsWith("CircleSize:")){
 						cs = Double.parseDouble(str.split(":")[1]);
+					} else if(str.startsWith("OverallDifficulty:")){
+						od = Double.parseDouble(str.split(":")[1]);
 					}
 					str = scan.nextLine();
 				}
 
 				ArrayList<Double> allNotes = new ArrayList<Double>();
 
-				double difficulty = 0;
 				double hardestNote = 0;
 				long time = 0;
 				double oldStreamValue = 0;
@@ -96,21 +99,26 @@ public class Main {
 								if (oldSpacing == 0) {
 									oldSpacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.3;
+								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.2;
 							} else {
 								if (spacing == 0) {
 									spacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.3;
+								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.2;
 							}
 						}
 
 						// Angle irregularity
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-								irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.3;
+								irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.2;
 						}
 
 						aimDifficulty *= irrDifficulty;
+						
+						// Small, very simple difficulty increase if object is slider.
+						if(parts.length > 5 && parts[5].contains("|")){
+							aimDifficulty *= 1.05;
+						}
 
 						// Adding speed consideration
 						double speedDifficulty = 0;
@@ -132,14 +140,17 @@ public class Main {
 						oldSpacing = spacing;
 						oldAngle = angle;
 						allNotes.add(noteDifficulty);
-						//System.out.println(noteDifficulty*1000 + ", " + streamValue + ", " + spacing + ", " + angle + ", " + irrDifficulty);
 					}
 				}
-
-				difficulty = getTotalPPValue(allNotes, numberOfObjects);
+				
+				double p95 = getTotalPPValue(allNotes, numberOfObjects, 95.0);
+				double p98 = getTotalPPValue(allNotes, numberOfObjects, 98.0);
+				double p99 = getTotalPPValue(allNotes, numberOfObjects, 99.0);
+				double p100 = getTotalPPValue(allNotes, numberOfObjects, 100.0);
+				
 				System.out.println(files[file].getName());
-				System.out.println("pp for fc: " + Math.round(difficulty));
-				System.out.println("Hardest note: " + hardestNote + "\n");
+				System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99) + "  100%: " + Math.round(p100));
+				System.out.println();
 				scan.close();
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -147,18 +158,22 @@ public class Main {
 		}
 	}
 
-	private static double getTotalPPValue(ArrayList<Double> list, int num) {
+	private static double getTotalPPValue(ArrayList<Double> list, int num, double acc) {
 		double difficulty = 0;
 		Collections.sort(list);
-		for (int i = 0; i < list.size() && i < 70; i++) {
+		for (int i = 0; i < list.size() && i < 60; i++) {
 			difficulty += list.get(list.size() - 1 - i) * Math.pow(1, i);
 		}
-		difficulty *= 800;
+		difficulty *= 700;
 		
 		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) num / 2000.0) +
 				(num > 2000 ? Math.log10((double) num / 2000.0) * 0.5 : 0.0);
 		
 		difficulty *= lengthBonus;
+		
+		double accValue = Math.pow(1.52163, od) * Math.pow(acc/100, 24) * 2.83;
+		accValue *= Math.min(1.15, Math.pow(num / 1000.0, 0.3));
+		difficulty += accValue;
 		return difficulty;
 	}
 
