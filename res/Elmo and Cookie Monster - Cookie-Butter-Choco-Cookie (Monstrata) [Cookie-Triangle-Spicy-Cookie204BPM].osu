@@ -1,4 +1,4 @@
-osu file format v13
+﻿osu file format v13
 
 [General]
 AudioFilename:audioCookie-Triangle-Spicy-Cookie204BPM.mp3
@@ -30,7 +30,7 @@ BeatmapSetID:542081
 
 [Difficulty]
 HPDrainRate:6
-OverallDifficulty:9
+OverallDifficulty:10.3
 ApproachRate:8.3
 SliderMultiplier:2
 SliderTickRate:1

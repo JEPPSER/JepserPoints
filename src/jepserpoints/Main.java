@@ -32,7 +32,6 @@ public class Main {
 				double hardestNote = 0;
 				long time = 0;
 				double oldStreamValue = 0;
-				double oldoldStreamValue = 0;
 				int oldX = 0;
 				int oldY = 0;
 				int oldoldX = 0;
@@ -40,10 +39,18 @@ public class Main {
 				double oldSpacing = 0;
 				double oldAngle = 0;
 				int numberOfObjects = 0;
+				int maxCombo = 0;
+				int accCombo = 0;
 
 				// Reading hitobjects.
 				for (int i = 0; scan.hasNextLine(); i++) {
 					String[] parts = scan.nextLine().split(",");
+					maxCombo++;
+					if(parts.length >= 8){
+						maxCombo += Integer.parseInt(parts[6]);
+					} else if(parts.length < 8){
+						accCombo++;
+					}
 
 					// Skip spinners
 					if (!parts[3].equals("12")) {
@@ -81,9 +88,9 @@ public class Main {
 						double aimDifficulty = 0;
 						if (i > 1) {
 							if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-								aimDifficulty = Math.pow(spacing, 0.96) * (3 + (180.0 - angle) / 100.0);
+								aimDifficulty = Math.pow(spacing, 0.95) * (3 + (180.0 - angle) / 100.0);
 							} else {
-								aimDifficulty = Math.pow(spacing, 0.96) * 3;
+								aimDifficulty = Math.pow(spacing, 0.95) * 3;
 							}
 							if(angle > 80 && angle < 100){
 								aimDifficulty *= 1.5;
@@ -99,18 +106,18 @@ public class Main {
 								if (oldSpacing == 0) {
 									oldSpacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.2;
+								irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.4;
 							} else {
 								if (spacing == 0) {
 									spacing = 0.01;
 								}
-								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.2;
+								irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.4;
 							}
 						}
 
 						// Angle irregularity
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-								irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.2;
+								irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.4;
 						}
 
 						aimDifficulty *= irrDifficulty;
@@ -122,7 +129,7 @@ public class Main {
 
 						// Adding speed consideration
 						double speedDifficulty = 0;
-						speedDifficulty = 100 / Math.pow(deltaTime, 2.5);
+						speedDifficulty = 100 / Math.pow(deltaTime, 2.7);
 
 						double noteDifficulty = speedDifficulty * aimDifficulty;
 
@@ -135,18 +142,17 @@ public class Main {
 						oldoldY = oldY;
 						oldX = x;
 						oldY = y;
-						oldoldStreamValue = oldStreamValue;
 						oldStreamValue = streamValue;
 						oldSpacing = spacing;
 						oldAngle = angle;
 						allNotes.add(noteDifficulty);
 					}
 				}
-				
-				double p95 = getTotalPPValue(allNotes, numberOfObjects, 95.0);
-				double p98 = getTotalPPValue(allNotes, numberOfObjects, 98.0);
-				double p99 = getTotalPPValue(allNotes, numberOfObjects, 99.0);
-				double p100 = getTotalPPValue(allNotes, numberOfObjects, 100.0);
+
+				double p95 = getTotalPPValue(allNotes, 95.0, 0, maxCombo, maxCombo, accCombo);
+				double p98 = getTotalPPValue(allNotes, 98.0, 0, maxCombo, maxCombo, accCombo);
+				double p99 = getTotalPPValue(allNotes, 99.0, 0, maxCombo, maxCombo, accCombo);
+				double p100 = getTotalPPValue(allNotes, 100.0, 0, maxCombo, maxCombo, accCombo);
 				
 				System.out.println(files[file].getName());
 				System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99) + "  100%: " + Math.round(p100));
@@ -158,22 +164,34 @@ public class Main {
 		}
 	}
 
-	private static double getTotalPPValue(ArrayList<Double> list, int num, double acc) {
+	private static double getTotalPPValue(ArrayList<Double> list, double acc, int missCount, int maxCombo, int potMaxCombo, int accCombo) {
 		double difficulty = 0;
 		Collections.sort(list);
 		for (int i = 0; i < list.size() && i < 60; i++) {
 			difficulty += list.get(list.size() - 1 - i) * Math.pow(1, i);
 		}
-		difficulty *= 700;
 		
-		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) num / 2000.0) +
-				(num > 2000 ? Math.log10((double) num / 2000.0) * 0.5 : 0.0);
+		// Adjustment to match values of ppv2.
+		difficulty *= 1600;
 		
+		// Calculate length bonus
+		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) maxCombo / 2000.0) +
+				(maxCombo > 2000 ? Math.log10((double) maxCombo / 2000.0) * 0.5 : 0.0);
 		difficulty *= lengthBonus;
+
+		// Miss reduction
+		difficulty *= Math.pow(0.97, missCount);
 		
+		// Combo scaling
+		if(maxCombo > 0){
+			difficulty *= Math.min(Math.pow(potMaxCombo, 0.8) / Math.pow(maxCombo, 0.8), 1.0);
+		}
+		
+		// Calculate accuracy
 		double accValue = Math.pow(1.52163, od) * Math.pow(acc/100, 24) * 2.83;
-		accValue *= Math.min(1.15, Math.pow(num / 1000.0, 0.3));
+		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.3));
 		difficulty += accValue;
+		
 		return difficulty;
 	}
 
