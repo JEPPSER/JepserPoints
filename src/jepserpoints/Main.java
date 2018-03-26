@@ -18,12 +18,12 @@ public class Main extends Application{
 
 	public static void main(String[] args) {
 		// For testing many maps at once, used for debugging and adjustments.
-//		File[] files = new File("res").listFiles();
-//		for (int file = 0; file < files.length; file += 1) {
-//			Performance p = new Performance(files[file]);
-//			Mod[] mods = new Mod[4];
-//			p.calculatePP(mods, -1, 100.0, 0);
-//		}
+		File[] files = new File("res").listFiles();
+		for (int file = 0; file < files.length; file += 1) {
+			Performance p = new Performance(files[file]);
+			Mod[] mods = new Mod[4];
+			p.calculatePP(mods, -1, 100.0, 0);
+		}
 		launch();
 	}
 
