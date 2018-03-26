@@ -1,4 +1,4 @@
-osu file format v13
+﻿osu file format v13
 
 [General]
 AudioFilename:kira kira days2Shiawase!!300BPM.mp3
@@ -30,8 +30,8 @@ BeatmapSetID:444335
 
 [Difficulty]
 HPDrainRate:7
-OverallDifficulty:9
-ApproachRate:9.5
+OverallDifficulty:10.41
+ApproachRate:10.6
 SliderMultiplier:1.8
 SliderTickRate:1
 CircleSize:4
