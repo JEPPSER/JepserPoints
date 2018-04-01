@@ -62,6 +62,7 @@ public class Performance {
 			double oldAngle = 0;
 			int maxCombo = 0;
 			int accCombo = 0;
+			double hardestNote = 0;
 
 			// Reading hitobjects.
 			for (int i = 0; scan.hasNextLine(); i++) {
@@ -111,12 +112,13 @@ public class Performance {
 					double aimDifficulty = 0;
 					if (i > 1) {
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-							aimDifficulty = Math.pow(spacing, 0.9) * (3 + (180.0 - angle) / 400.0);
+							aimDifficulty = Math.pow(spacing, 1.15) * (7 - (angle / 180));
 						} else {
-							aimDifficulty = Math.pow(spacing, 0.9) * 3;
+							aimDifficulty = Math.pow(spacing, 1.15) * 6;
 						}
+
 						if (angle > 80 && angle < 100) {
-							aimDifficulty *= 1.5;
+							aimDifficulty *= 1.4;
 						}
 					}
 
@@ -129,18 +131,18 @@ public class Performance {
 							if (oldSpacing == 0) {
 								oldSpacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.2;
+							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.3;
 						} else {
 							if (spacing == 0) {
 								spacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.2;
+							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.3;
 						}
 					}
 
 					// Angle irregularity
 					if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.2;
+						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.3;
 					}
 
 					aimDifficulty *= irrDifficulty;
@@ -153,7 +155,7 @@ public class Performance {
 
 					// Adding speed consideration
 					double speedDifficulty = 0;
-					speedDifficulty = 100 / Math.pow(deltaTime, 2.6);
+					speedDifficulty = 100 / Math.pow(deltaTime, 2.7);
 
 					double noteDifficulty = speedDifficulty * aimDifficulty;
 
@@ -166,6 +168,12 @@ public class Performance {
 					oldSpacing = spacing;
 					oldAngle = angle;
 					allNotes.add(noteDifficulty);
+					
+					if(noteDifficulty > hardestNote){
+						hardestNote = noteDifficulty;
+					}
+					
+					//System.out.println(noteDifficulty * 1000 + ", " + irrDifficulty + ", " + streamValue);
 				}
 			}
 
@@ -177,6 +185,7 @@ public class Performance {
 			System.out.println(file.getName());
 			System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99)
 					+ "  100%: " + Math.round(p100));
+			System.out.println(hardestNote*1000);
 			System.out.println();
 			
 			if (combo == -1) {
@@ -195,18 +204,21 @@ public class Performance {
 		double difficulty = 0;
 		Collections.sort(list);
 
-		// The 60 hardest notes will be added to form the total value.
-		for (int i = 0; i < list.size() && i < 60; i++) {
-			difficulty += list.get(list.size() - 1 - i) * Math.pow(1, i);
+		// The hardest notes will be added to form the total value.
+		for (int i = 0; i < list.size(); i++) {
+			int j = i;
+			if(i > 300 && i < 1500){
+				j = 300;
+			}
+			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.99, j);
 		}
 
 		// Adjustment to match values of ppv2.
-		difficulty *= 1300;
+		difficulty *= 550;
 
 		// Calculate length bonus
-		double lengthBonus = 0.95 + 0.1 * Math.min(1.0, (double) maxCombo / 2000.0)
-				+ (maxCombo > 2000 ? Math.log10((double) maxCombo / 2000.0) * 0.5 : 0.0);
-		difficulty *= lengthBonus;
+		double lengthBonus = 0.95 + 0.2 * Math.min(1.0, (double) maxCombo / 2000.0);
+		//difficulty *= lengthBonus;
 
 		// Miss reduction
 		difficulty *= Math.pow(0.97, missCount);
@@ -229,7 +241,7 @@ public class Performance {
 		difficulty *= arFactor;
 
 		if (hidden) {
-			difficulty *= 1.18;
+			difficulty *= 1.12;
 		}
 
 		if (flashlight) {
@@ -238,7 +250,7 @@ public class Performance {
 
 		// Calculate accuracy
 		double accValue = Math.pow(1.52163, od) * Math.pow(acc / 100, 24) * 2.83;
-		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.3));
+		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.2));
 		difficulty += accValue;
 
 		return difficulty;
