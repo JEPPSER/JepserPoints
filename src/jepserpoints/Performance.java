@@ -53,13 +53,8 @@ public class Performance {
 			ArrayList<Double> allNotes = new ArrayList<Double>();
 
 			long time = 0;
-			double oldStreamValue = 0;
 			int oldX = 0;
 			int oldY = 0;
-			int oldoldX = 0;
-			int oldoldY = 0;
-			double oldSpacing = 0;
-			double oldAngle = 0;
 			int maxCombo = 0;
 			int accCombo = 0;
 			double hardestNote = 0;
@@ -91,61 +86,11 @@ public class Performance {
 						spacing = spacing / (109 - 9 * cs);
 					}
 
-					// Get angle from last object to current object.
-					double angle = 140;
-					if (i > 1) {
-						angle = getAngle(oldoldX, oldoldY, oldX, oldY, x, y);
-					}
-
-					// Get jump/stream values. As of now, this is only used for
-					// comparing if
-					// notes are part of the same stream/jump section.
-					double jumpValue = (double) (deltaTime - 83) / (double) 104;
-					if (jumpValue > 1) {
-						jumpValue = 1;
-					} else if (jumpValue < 0) {
-						jumpValue = 0;
-					}
-					double streamValue = 1 - jumpValue;
-
 					// Calculating aim difficulty with spacing and angle.
 					double aimDifficulty = 0;
 					if (i > 1) {
-						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-							aimDifficulty = Math.pow(spacing, 1.1) * (6 - (angle / 180));
-						} else {
-							aimDifficulty = Math.pow(spacing, 1.1) * 5;
-						}
-						if (angle > 80 && angle < 100) {
-							aimDifficulty *= 1 + (10 - Math.abs(10 - (100 - angle))) / 20;
-							//System.out.println(1 + (10 - Math.abs(10 - (100 - angle))) / 20);
-						}
+						aimDifficulty = Math.pow(spacing, 1.1) * 5;
 					}
-
-					// Calculating irregularity difficulty.
-					double irrDifficulty = 1;
-
-					// Spacing irregularity
-					if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-						if (oldSpacing > spacing) {
-							if (oldSpacing == 0) {
-								oldSpacing = 0.01;
-							}
-							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.1;
-						} else {
-							if (spacing == 0) {
-								spacing = 0.01;
-							}
-							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.1;
-						}
-					}
-
-					// Angle irregularity
-					if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.2;
-					}
-
-					aimDifficulty *= irrDifficulty;
 
 					// Small, very simple difficulty increase if object is
 					// slider.
@@ -160,20 +105,13 @@ public class Performance {
 					double noteDifficulty = speedDifficulty * aimDifficulty;
 
 					// Set old x and y values for future calculations.
-					oldoldX = oldX;
-					oldoldY = oldY;
 					oldX = x;
 					oldY = y;
-					oldStreamValue = streamValue;
-					oldSpacing = spacing;
-					oldAngle = angle;
 					allNotes.add(noteDifficulty);
-					
-					if(noteDifficulty > hardestNote){
+
+					if (noteDifficulty > hardestNote) {
 						hardestNote = noteDifficulty;
 					}
-					
-					//System.out.println(noteDifficulty * 1000 + ", " + irrDifficulty + ", " + streamValue);
 				}
 			}
 
@@ -186,9 +124,9 @@ public class Performance {
 			System.out.println(ar + ", " + od + ", " + cs);
 			System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99)
 					+ "  100%: " + Math.round(p100));
-			System.out.println(hardestNote*1000);
+			System.out.println(hardestNote * 1000);
 			System.out.println();
-			
+
 			if (combo == -1) {
 				combo = maxCombo;
 			}
@@ -208,14 +146,18 @@ public class Performance {
 		// The hardest notes will be added to form the total value.
 		for (int i = 0; i < list.size(); i++) {
 			int j = i;
-			if(i > 100 && i < 1500){
+			if (i > 100) {
 				j = 100;
 			}
-			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.963, j);
+			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.958, j);
 		}
 
 		// Adjustment to match values of ppv2.
-		difficulty *= 1800;
+		difficulty *= 2300;
+
+		double lengthBonus = 0.95 + 0.3 * Math.min(1.0, (double) potMaxCombo / 2000.0);
+
+		difficulty *= lengthBonus;
 
 		// Miss reduction
 		difficulty *= Math.pow(0.97, missCount);
@@ -227,7 +169,7 @@ public class Performance {
 
 		// AR difficulty adjustments
 		double arFactor = 1.0;
-		if(ar > 10.33) {
+		if (ar > 10.33) {
 			arFactor += 0.3 * (ar - 10.33);
 		} else if (ar < 8.0) {
 			if (hidden) {
@@ -249,7 +191,7 @@ public class Performance {
 
 		// Calculate accuracy
 		double accValue = Math.pow(1.52163, od) * Math.pow(acc / 100, 24) * 2.83;
-		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.2));
+		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.3));
 		difficulty += accValue;
 
 		return difficulty;
