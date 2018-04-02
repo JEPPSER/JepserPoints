@@ -112,13 +112,13 @@ public class Performance {
 					double aimDifficulty = 0;
 					if (i > 1) {
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-							aimDifficulty = Math.pow(spacing, 1.1) * (7 - (angle / 180));
+							aimDifficulty = Math.pow(spacing, 1.1) * (6 - (angle / 180));
 						} else {
-							aimDifficulty = Math.pow(spacing, 1.1) * 6;
+							aimDifficulty = Math.pow(spacing, 1.1) * 5;
 						}
-
 						if (angle > 80 && angle < 100) {
-							aimDifficulty *= 1.5;
+							aimDifficulty *= 1 + (10 - Math.abs(10 - (100 - angle))) / 20;
+							//System.out.println(1 + (10 - Math.abs(10 - (100 - angle))) / 20);
 						}
 					}
 
@@ -131,18 +131,18 @@ public class Performance {
 							if (oldSpacing == 0) {
 								oldSpacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.4;
+							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.1;
 						} else {
 							if (spacing == 0) {
 								spacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.4;
+							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.1;
 						}
 					}
 
 					// Angle irregularity
 					if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.4;
+						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.2;
 					}
 
 					aimDifficulty *= irrDifficulty;
@@ -150,7 +150,7 @@ public class Performance {
 					// Small, very simple difficulty increase if object is
 					// slider.
 					if (parts.length > 5 && parts[5].contains("|")) {
-						aimDifficulty *= 1.05;
+						aimDifficulty *= 1.1;
 					}
 
 					// Adding speed consideration
@@ -183,7 +183,7 @@ public class Performance {
 			double p100 = getTotalPPValue(allNotes, 100.0, 0, maxCombo, maxCombo, accCombo);
 
 			System.out.println(file.getName());
-			System.out.println(ar + ", " + od);
+			System.out.println(ar + ", " + od + ", " + cs);
 			System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99)
 					+ "  100%: " + Math.round(p100));
 			System.out.println(hardestNote*1000);
@@ -208,18 +208,14 @@ public class Performance {
 		// The hardest notes will be added to form the total value.
 		for (int i = 0; i < list.size(); i++) {
 			int j = i;
-			if(i > 300 && i < 1500){
-				j = 300;
+			if(i > 100 && i < 1500){
+				j = 100;
 			}
-			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.99, j);
+			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.963, j);
 		}
 
 		// Adjustment to match values of ppv2.
-		difficulty *= 550;
-
-		// Calculate length bonus
-		double lengthBonus = 0.95 + 0.2 * Math.min(1.0, (double) maxCombo / 2000.0);
-		//difficulty *= lengthBonus;
+		difficulty *= 1800;
 
 		// Miss reduction
 		difficulty *= Math.pow(0.97, missCount);
@@ -232,7 +228,7 @@ public class Performance {
 		// AR difficulty adjustments
 		double arFactor = 1.0;
 		if(ar > 10.33) {
-			arFactor += 0.2 * (ar - 10.33);
+			arFactor += 0.3 * (ar - 10.33);
 		} else if (ar < 8.0) {
 			if (hidden) {
 				arFactor += 0.02 * (8.0 - ar);
@@ -248,7 +244,7 @@ public class Performance {
 		}
 
 		if (flashlight) {
-			difficulty *= 1.45 * lengthBonus;
+			difficulty *= 1.0 + (double) (potMaxCombo / 1500.0);
 		}
 
 		// Calculate accuracy
