@@ -105,11 +105,11 @@ public class Main extends Application{
 		calc.setOnAction(e ->{
 			Performance p = new Performance(new File(fileText.getText()));
 			Mod[] mods = new Mod[4];
-			if(dt.isSelected()){
-				mods[0] = Mod.doubletime;
-			}
 			if(hr.isSelected()){
-				mods[1] = Mod.hardrock;
+				mods[0] = Mod.hardrock;
+			}
+			if(dt.isSelected()){
+				mods[1] = Mod.doubletime;
 			}
 			if(hd.isSelected()){
 				mods[2] = Mod.hidden;

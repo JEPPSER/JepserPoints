@@ -112,13 +112,13 @@ public class Performance {
 					double aimDifficulty = 0;
 					if (i > 1) {
 						if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-							aimDifficulty = Math.pow(spacing, 1.15) * (7 - (angle / 180));
+							aimDifficulty = Math.pow(spacing, 1.1) * (7 - (angle / 180));
 						} else {
-							aimDifficulty = Math.pow(spacing, 1.15) * 6;
+							aimDifficulty = Math.pow(spacing, 1.1) * 6;
 						}
 
 						if (angle > 80 && angle < 100) {
-							aimDifficulty *= 1.4;
+							aimDifficulty *= 1.5;
 						}
 					}
 
@@ -131,18 +131,18 @@ public class Performance {
 							if (oldSpacing == 0) {
 								oldSpacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.3;
+							irrDifficulty = 1 + (1 - (spacing / oldSpacing)) * 0.4;
 						} else {
 							if (spacing == 0) {
 								spacing = 0.01;
 							}
-							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.3;
+							irrDifficulty = 1 + (1 - (oldSpacing / spacing)) * 0.4;
 						}
 					}
 
 					// Angle irregularity
 					if (streamValue - oldStreamValue > -0.1 && streamValue - oldStreamValue < 0.1) {
-						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.3;
+						irrDifficulty *= 1 + (Math.abs(angle - oldAngle) / 180) * 0.4;
 					}
 
 					aimDifficulty *= irrDifficulty;
@@ -183,6 +183,7 @@ public class Performance {
 			double p100 = getTotalPPValue(allNotes, 100.0, 0, maxCombo, maxCombo, accCombo);
 
 			System.out.println(file.getName());
+			System.out.println(ar + ", " + od);
 			System.out.println("95%: " + Math.round(p95) + "  98%: " + Math.round(p98) + "  99%: " + Math.round(p99)
 					+ "  100%: " + Math.round(p100));
 			System.out.println(hardestNote*1000);
@@ -230,7 +231,9 @@ public class Performance {
 
 		// AR difficulty adjustments
 		double arFactor = 1.0;
-		if (ar < 8.0) {
+		if(ar > 10.33) {
+			arFactor += 0.2 * (ar - 10.33);
+		} else if (ar < 8.0) {
 			if (hidden) {
 				arFactor += 0.02 * (8.0 - ar);
 			} else {
