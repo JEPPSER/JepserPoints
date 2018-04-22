@@ -89,13 +89,13 @@ public class Performance {
 					// Calculating aim difficulty with spacing and angle.
 					double aimDifficulty = 0;
 					if (i > 1) {
-						aimDifficulty = Math.pow(spacing, 1.1) * 5;
+						aimDifficulty = Math.pow(spacing, 1) * 5;
 					}
 
 					// Small, very simple difficulty increase if object is
 					// slider.
 					if (parts.length > 5 && parts[5].contains("|")) {
-						aimDifficulty *= 1.1;
+						aimDifficulty *= 1;
 					}
 
 					// Adding speed consideration
@@ -145,18 +145,17 @@ public class Performance {
 
 		// The hardest notes will be added to form the total value.
 		for (int i = 0; i < list.size(); i++) {
-			int j = i;
-			if (i > 100) {
-				j = 100;
+			if (i < 80) {
+				difficulty += list.get(list.size() - 1 - i) * Math.pow(0.96, i);
+			} else {
+				difficulty += list.get(list.size() - 1 - i) * 0.01;
 			}
-			difficulty += list.get(list.size() - 1 - i) * Math.pow(0.958, j);
 		}
 
 		// Adjustment to match values of ppv2.
-		difficulty *= 2300;
+		difficulty *= 2200;
 
 		double lengthBonus = 0.95 + 0.3 * Math.min(1.0, (double) potMaxCombo / 2000.0);
-
 		difficulty *= lengthBonus;
 
 		// Miss reduction
@@ -170,7 +169,7 @@ public class Performance {
 		// AR difficulty adjustments
 		double arFactor = 1.0;
 		if (ar > 10.33) {
-			arFactor += 0.3 * (ar - 10.33);
+			arFactor += 0.4 * (ar - 10.33);
 		} else if (ar < 8.0) {
 			if (hidden) {
 				arFactor += 0.02 * (8.0 - ar);
@@ -190,8 +189,8 @@ public class Performance {
 		}
 
 		// Calculate accuracy
-		double accValue = Math.pow(1.52163, od) * Math.pow(acc / 100, 24) * 2.83;
-		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.3));
+		double accValue = Math.pow(1.57, od) * Math.pow(acc / 100, 30) * 2.83;
+		accValue *= Math.min(1.15, Math.pow(accCombo / 1000.0, 0.25));
 		difficulty += accValue;
 
 		return difficulty;
